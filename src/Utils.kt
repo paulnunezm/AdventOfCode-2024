@@ -12,8 +12,8 @@ fun readInput(path: String, name: String) =
 fun readInputForDay(day: Int) =
     readInput("src/day$day","input_$day")
 
-fun readTestInputForDay(day: Int) =
-    readInput("src/day$day","input_test_$day")
+fun readTestInputForDay(day: Int, part: Int = day) =
+    readInput("src/day$day","input_test_$part")
 /**
  * Converts string to md5 hash.
  */
