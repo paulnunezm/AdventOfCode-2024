@@ -16,7 +16,8 @@ fun main() {
 
     fun checkForWordAtLine(
         word: List<String> = listOf("X", "M", "A", "S"),
-        matrix: List<List<String>>, pos: (i: Int) -> Pair<Int, Int>
+        matrix: List<List<String>>,
+        pos: (i: Int) -> Pair<Int, Int>
     ): Int {
         var wordsFound = 0
         for (i in word.indices) {
@@ -116,31 +117,14 @@ fun main() {
         val canCheckRL = colIdx - offset >= 0
 
         if (canCheckLR && canCheckRL && canCheckTB && canCheckBT) {
-
-            wordCount += checkForWordAtLine(word = wordList, matrix = matrix) { i ->
-                rowIdx + i - offset to colIdx + i - offset
-            }.also {
-                "->TB Diagonal LR $it".println()
+            listOf<(i: Int) -> Pair<Int, Int>>( // Direction list
+                { i -> rowIdx + i - offset to colIdx + i - offset }, // TBLR
+                { i -> rowIdx + i - offset to colIdx - i + offset }, // TBRL
+                { i -> rowIdx - i + offset to colIdx + i - offset }, // BTLR
+                { i -> rowIdx - i + offset to colIdx - i + offset } // BTLR
+            ).forEach {
+                wordCount += checkForWordAtLine(word = wordList, matrix = matrix, it)
             }
-
-            wordCount += checkForWordAtLine(word = wordList, matrix = matrix) { i ->
-                rowIdx + i - offset to colIdx - i + offset
-            }.also {
-                "->TB Diagonal RL $it".println()
-            }
-
-            wordCount += checkForWordAtLine(word = wordList, matrix = matrix) { i ->
-                rowIdx - i + offset to colIdx + i - offset
-            }.also {
-                "->BT Diagonal LR $it".println()
-            }
-
-            wordCount += checkForWordAtLine(word = wordList, matrix = matrix) { i ->
-                rowIdx - i + offset to colIdx - i + offset
-            }.also {
-                "->BT Diagonal RL $it".println()
-            }
-
         }
 
         return wordCount == 2
