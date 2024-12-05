@@ -96,40 +96,27 @@ fun main() {
         walkTroughUpdatesRules(updatePagesIndexMap, rulesMap) { isCorrect: Boolean, update: List<Int> ->
             if (!isCorrect) incorrectUpdates += update.toMutableList()
         }
-        val correctUpdates = mutableListOf<List<Int>>()
 
+        val correctUpdates = mutableListOf<List<Int>>()
         for (incorrectUpdate in incorrectUpdates) {
-            "== update == $incorrectUpdate".println()
-            var sortedUpdate = buildList { addAll(incorrectUpdate) }.toMutableList()
+            val sortedUpdate = buildList { addAll(incorrectUpdate) }.toMutableList()
             for (i in incorrectUpdate.indices) {
                 val pageValue = incorrectUpdate[i]
                 val pageIndex = sortedUpdate.indexOf(pageValue)
 
                 val rulesForPage = rulesMap[pageValue] ?: emptyList()
-
-                if (rulesForPage.isEmpty()) {
-                    "no rules for $pageValue".println()
-                    continue
-                } else {
-                    "rules for $pageValue $rulesForPage".println()
-                }
+                if (rulesForPage.isEmpty()) continue
 
                 val minRuleIndex = rulesForPage.map {
                     sortedUpdate.indexOf(it)
                 }.filter { it >= 0 }.minOrNull()
 
-                if (minRuleIndex == null || minRuleIndex - 1 == pageIndex) {
-                    "no swap for $pageValue".println()
-                } else {
-                    "goint to swap for $pageValue min rule idx $minRuleIndex".println()
-                    "swaping".println()
-                    val value = sortedUpdate[minRuleIndex]
+                if (minRuleIndex != null && minRuleIndex - 1 != pageIndex) {
+                    val valueToBeBehind = sortedUpdate[minRuleIndex]
                     sortedUpdate.remove(pageValue)
-                    val idx = sortedUpdate.indexOf(value)
+                    val idx = sortedUpdate.indexOf(valueToBeBehind)
                     sortedUpdate.add(idx, pageValue)
-                    "swapped $sortedUpdate\n".println()
                 }
-
             }
             correctUpdates.add(sortedUpdate)
         }
@@ -154,6 +141,6 @@ fun main() {
     }.also { "took $it ms".println() } // 9ms
 
     measureTimeMillis {
-        "Part 2: ${part2(input)}".println() // Result: 4641
-    }.also { "took $it ms".println() } // 10ms
+        "Part 2: ${part2(input)}".println() // Result: 5169
+    }.also { "took $it ms".println() } // 29ms
 }
