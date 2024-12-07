@@ -1,13 +1,17 @@
 package day7
 
 import println
-import readInput
 import readInputForDay
 import readTestInputForDay
-import kotlin.system.exitProcess
 import kotlin.system.measureTimeMillis
 
 private data class Equation(val result: Long, val values: List<Long>)
+
+typealias Operation = (Long, Long) -> Long
+
+val Sum: Operation = { x, y -> x + y }
+val Multiply: Operation = { x, y -> x * y }
+val Concat: Operation = { x, y -> "$x$y".toLong() }
 
 fun main() {
     val testInput = transformInput(readTestInputForDay(7, part = 1))
@@ -34,56 +38,36 @@ fun main() {
 
 private fun part1(input: List<Equation>): Long =
     input.sumOf { equation ->
-        val permutations = operationPermutation(equation)
-        if (equation.result in permutations) {
-            equation.result
-        } else {
-            0
-        }
-    }
-
-private fun part2(input: List<Equation>): Long {
-    val part1Result = part1(input)
-
-    return input.filterNot {
-        val permutations = operationPermutation(it)
-        it.result in permutations
-    }.sumOf { equation ->
         val permutations = operationConcatPermutation(equation)
         if (equation.result in permutations) {
             equation.result
         } else {
             0
         }
-    } + part1Result
-}
+    }
 
-private fun operationConcatPermutation(equation: Equation): List<Long> {
-    val permutations = equation.values.fold(emptyList()) { acc: List<Long>, i: Long ->
-        if (acc.isEmpty()) {
-            return@fold listOf(i)
+private fun part2(input: List<Equation>): Long =
+    input.sumOf { equation ->
+        val permutations = operationConcatPermutation(equation, concat = true)
+        if (equation.result in permutations) {
+            equation.result
         } else {
-            val x = mutableListOf<Long>()
-            for (j in acc.indices) {
-                x += acc[j] + i
-                x += acc[j] * i
-                x+="${acc[j]}$i".toLong()
-            }
-            return@fold x
+            0
         }
     }
-    return permutations
-}
 
-private fun operationPermutation(equation: Equation): List<Long> {
+private fun operationConcatPermutation(equation: Equation, concat: Boolean = false): List<Long> {
     val permutations = equation.values.fold(emptyList()) { acc: List<Long>, i: Long ->
         if (acc.isEmpty()) {
             return@fold listOf(i)
         } else {
             val x = mutableListOf<Long>()
             for (j in acc.indices) {
-                x += acc[j] + i
-                x += acc[j] * i
+                x += Sum(acc[j], i)
+                x += Multiply(acc[j], i)
+                if (concat) {
+                    x += Concat(acc[j], i)
+                }
             }
             return@fold x
         }
