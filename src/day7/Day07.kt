@@ -13,11 +13,23 @@ fun main() {
     val testInput = transformInput(readTestInputForDay(7, part = 1))
     val input = transformInput(readInputForDay(7))
 
-    part1(testInput).also { check(it == 3749L) { "test result was $it" } }
-    part2(testInput).also { check(it == 11387L) { "test result was $it" } }
+    part2(testInput)
 
-    "Part 1: ${part1(input)}".println() // Result: 12553187650171
-    "Part 2: ${part2(input)}".println() // Result: 96779702119491
+    part1(testInput).also {
+        check(it == 3749L) { "test result was $it" }
+    }
+
+    part2(testInput).also {
+        check(it == 11387L) { "test result was $it" }
+    }
+
+    measureTimeMillis {
+        "Part 1: ${part1(input)}".println() // Result: 12553187650171
+    }.also { "took $it ms".println() } // 12ms
+
+    measureTimeMillis {
+        "Part 2: ${part2(input)}".println() // Result: 96779702119491
+    }.also { "took $it ms".println() } // 208ms
 }
 
 private fun part1(input: List<Equation>): Long =
@@ -55,7 +67,7 @@ private fun operationConcatPermutation(equation: Equation): List<Long> {
             for (j in acc.indices) {
                 x += acc[j] + i
                 x += acc[j] * i
-                x += "${acc[j]}$i".toLong()
+                x+="${acc[j]}$i".toLong()
             }
             return@fold x
         }
