@@ -7,13 +7,17 @@ import kotlin.math.abs
 
 fun main() {
     val testInput = readTestInputForDay(8, 1)
+    val testInput2 = readTestInputForDay(8, 2)
     val testMatrix = parseMatrix(testInput)
+    val testMatrix2 = parseMatrix(testInput2)
     drawMatrix(testMatrix, emptyList())
     part1(testMatrix).println()
+    part2(testMatrix).println()
 
     val input = readInputForDay(8)
     val inputMatrix = parseMatrix(input)
     "Part 1: ${part1(inputMatrix)}".println() // Result: 396
+    "Part 2: ${part2(inputMatrix)}".println() // Result: 1200
 }
 
 private data class Position(val row: Int, val col: Int)
@@ -46,7 +50,9 @@ private fun Position.absolute() = Position(abs(this.row), abs(this.col))
 private fun getAntiNodesForFirstPosition(
     frequenciesPositions: Set<Position>,
     positions: List<Position>,
-    antiNodes: MutableSet<Position>
+    antiNodes: MutableSet<Position>,
+    calculateHarmonics: Boolean = false,
+    matrixIndices: IntRange
 ) {
 
     // Base case
@@ -64,7 +70,7 @@ private fun getAntiNodesForFirstPosition(
             current.col + diff.col
         } else current.col - diff.col
 
-        val beforeAntiNode = Position(
+        var beforeAntiNode = Position(
             current.row - diff.row,
             beforeAntiNodeColPos
         )
@@ -72,23 +78,47 @@ private fun getAntiNodesForFirstPosition(
             position.col - diff.col
         } else position.col + diff.col
 
-        val afterAntiNode = Position(
+        var afterAntiNode = Position(
             position.row + diff.row,
             afterAntiNodeColPos,
         )
-        antiNodes.add(beforeAntiNode)
-        antiNodes.add(afterAntiNode)
+        if (!calculateHarmonics) {
+            antiNodes.add(beforeAntiNode)
+            antiNodes.add(afterAntiNode)
+        } else {
+            while (beforeAntiNode.col in matrixIndices && beforeAntiNode.row in matrixIndices) {
+                antiNodes.add(beforeAntiNode)
+                beforeAntiNode = Position(
+                    beforeAntiNode.row - diff.row,
+                    if (isCurrentToTheRight) {
+                        beforeAntiNode.col + diff.col
+                    } else beforeAntiNode.col - diff.col
+                )
+            }
+            while (afterAntiNode.col in matrixIndices && afterAntiNode.row in matrixIndices) {
+                antiNodes.add(afterAntiNode)
+
+                afterAntiNode = Position(
+                    afterAntiNode.row + diff.row,
+                    if (isCurrentToTheRight) {
+                        afterAntiNode.col - diff.col
+                    } else afterAntiNode.col + diff.col
+                )
+            }
+        }
     }
 
-    getAntiNodesForFirstPosition(frequenciesPositions, positionsLeft, antiNodes)
+    getAntiNodesForFirstPosition(frequenciesPositions, positionsLeft, antiNodes, calculateHarmonics, matrixIndices)
 }
 
 private fun getAntiNodesForAntenna(
     frequenciesPositions: Set<Position>,
-    positions: List<Position>
+    positions: List<Position>,
+    calculateHarmonics: Boolean,
+    matrixIndices: IntRange
 ): MutableSet<Position> {
     val antiNodes = mutableSetOf<Position>()
-    getAntiNodesForFirstPosition(frequenciesPositions, positions, antiNodes)
+    getAntiNodesForFirstPosition(frequenciesPositions, positions, antiNodes, calculateHarmonics, matrixIndices)
     return antiNodes
 }
 
@@ -109,7 +139,7 @@ private fun part1(matrix: List<List<Char>>): Int {
     val antennasMap = getAntennasMap(matrix)
     val frequenciesPositions = antennasMap.values.flatten().toSet()
     val antiNodes = antennasMap.map {
-        getAntiNodesForAntenna(frequenciesPositions, it.value)
+        getAntiNodesForAntenna(frequenciesPositions, it.value, calculateHarmonics = false, matrix.indices)
     }.flatten().filter {
         it.ifIsBetweenBounds(matrix.indices)
     }.distinct()
@@ -117,4 +147,19 @@ private fun part1(matrix: List<List<Char>>): Int {
     drawMatrix(matrix, antiNodes)
 
     return antiNodes.count()
+}
+
+private fun part2(matrix: List<List<Char>>): Int {
+    val antennasMap = getAntennasMap(matrix)
+    val frequenciesPositions = antennasMap.values.flatten().toSet()
+    frequenciesPositions.println()
+    val antiNodes = antennasMap.map {
+        getAntiNodesForAntenna(frequenciesPositions, it.value, calculateHarmonics = true, matrix.indices)
+    }.flatten().filter {
+        it.ifIsBetweenBounds(matrix.indices) && !frequenciesPositions.contains(it) // Because we sum it later
+    }.distinct()
+
+    drawMatrix(matrix, antiNodes)
+
+    return antiNodes.count() + frequenciesPositions.count()
 }
