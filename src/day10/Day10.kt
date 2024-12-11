@@ -6,11 +6,11 @@ import readTestInputForDay
 import kotlin.contracts.contract
 import kotlin.system.measureTimeMillis
 
-data class Path(val height: Int, val position: Position)
-data class Position(val row: Int, val col: Int)
-data class Direction(val col: Int, val row: Int)
+private data class Path(val height: Int, val position: Position)
+private data class Position(val row: Int, val col: Int)
+private data class Direction(val col: Int, val row: Int)
 
-val directions = listOf(
+private val directions = listOf(
     Direction(0, -1), // top
     Direction(1, 0), // right
     Direction(0, 1), // bottom
