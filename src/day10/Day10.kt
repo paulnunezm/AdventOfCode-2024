@@ -4,6 +4,7 @@ import println
 import readInputForDay
 import readTestInputForDay
 import kotlin.contracts.contract
+import kotlin.system.measureTimeMillis
 
 data class Path(val height: Int, val position: Position)
 data class Position(val row: Int, val col: Int)
@@ -21,13 +22,20 @@ fun main() {
         .map {
             it.map { it.digitToInt() }
         }
-    val input = readInputForDay(10 )
+    val input = readInputForDay(10)
         .map {
             it.map { it.digitToInt() }
         }
 
     part1(testInput).println()
-    part1(input).println()
+
+    measureTimeMillis {
+        "Part 1: ${part1(input)}".println() // Result: 682
+    }.also { "took $it ms".println() } // 4ms
+
+    measureTimeMillis {
+        "Part 2: ${part2(input)}".println() // Result: 1511
+    }.also { "took $it ms".println() } // 1ms
 }
 
 private fun Position.ifIsBetweenBounds(indices: IntRange): Boolean =
@@ -61,11 +69,42 @@ private fun walkTroughPaths(currentPath: Path, map: List<List<Int>>): Set<Positi
     return trailEndPosition
 }
 
+private fun walkTroughPaths2(currentPath: Path, map: List<List<Int>>): Int {
+    var trails = 0
+    for (idx in directions.indices) {
+        val direction = directions[idx]
+        val nextPathPosition = Position(
+            row = currentPath.position.row + direction.row,
+            col = currentPath.position.col + direction.col,
+        )
+        if (nextPathPosition.ifIsBetweenBounds(map.indices)) {
+            val nextHeight = map[nextPathPosition.row][nextPathPosition.col]
+            if (nextHeight == currentPath.height + 1) {
+                if (nextHeight == 9) {
+                    trails++
+                } else {
+                    trails += walkTroughPaths2(
+                        currentPath = Path(height = nextHeight, nextPathPosition),
+                        map = map
+                    )
+                }
+            }
+
+        }
+    }
+
+    return trails
+}
+
 /**
  * @return the amount of trails.
  */
 private fun findTrails(startPosition: Path, map: List<List<Int>>): Int =
     walkTroughPaths(startPosition, map).count()
+
+private fun findTrails2(startPosition: Path, map: List<List<Int>>): Int =
+    walkTroughPaths2(startPosition, map)
+
 
 private fun part1(map: List<List<Int>>): Int {
     val trailHeads = mutableListOf<Path>()
@@ -77,5 +116,18 @@ private fun part1(map: List<List<Int>>): Int {
 
     return trailHeads.fold(0) { acc, pos ->
         acc + findTrails(pos, map)
+    }
+}
+
+private fun part2(map: List<List<Int>>): Int {
+    val trailHeads = mutableListOf<Path>()
+    map.forEachIndexed { rowIdx, row ->
+        row.forEachIndexed { colIdx, col ->
+            if (col == 0) trailHeads += Path(0, Position(rowIdx, colIdx))
+        }
+    }
+
+    return trailHeads.fold(0) { acc, pos ->
+        acc + findTrails2(pos, map)
     }
 }
