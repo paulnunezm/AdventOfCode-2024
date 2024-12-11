@@ -3,7 +3,6 @@ package day10
 import println
 import readInputForDay
 import readTestInputForDay
-import kotlin.contracts.contract
 import kotlin.system.measureTimeMillis
 
 private data class Path(val height: Int, val position: Position)
@@ -96,15 +95,11 @@ private fun walkTroughPaths2(currentPath: Path, map: List<List<Int>>): Int {
     return trails
 }
 
-/**
- * @return the amount of trails.
- */
 private fun findTrails(startPosition: Path, map: List<List<Int>>): Int =
     walkTroughPaths(startPosition, map).count()
 
 private fun findTrails2(startPosition: Path, map: List<List<Int>>): Int =
     walkTroughPaths2(startPosition, map)
-
 
 private fun part1(map: List<List<Int>>): Int {
     val trailHeads = mutableListOf<Path>()
