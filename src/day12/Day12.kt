@@ -11,13 +11,25 @@ fun main() {
     val input =
         Path("src/day12/input_12.txt").readText().trim().lines()
 
-    val testGardensPlots = getPlotMap(testInput1)
-    measureTime {
-        part1(getPlotMap(input))// Solution: 1433460
-    }.println() // 949ms
+    // Solution: 1433460
+    // Took: 782ms
+    measureAndPrint {
+        part1(getPlotMap(input))
+    }
 }
 
-private fun part1(map: List<List<Char>>) {
+private fun measureAndPrint(block: (Unit) -> Int) {
+    measureTime {
+        """
+            
+        ========================
+         Solution: ${block(Unit)}
+        ========================
+        """.trimIndent().println()
+    }.also(::println) // 810.ms
+}
+
+private fun part1(map: List<List<Char>>): Int {
     val fences = mutableListOf<Pair<List<Position>, Int>>()
 
     val visited = mutableListOf<Position>()
@@ -26,14 +38,13 @@ private fun part1(map: List<List<Char>>) {
             val currentPos = Position(x = col, y = row)
             if (!visited.contains(currentPos)) {
                 fences += getFences(map, map[row][col], currentPos, visited)
-                println("visited for ${map[row][col]}: \n$visited}")
             }
         }
     }
 
-    fences.sumOf {
+    return fences.sumOf {
         it.first.count() * it.second
-    }.println()
+    }
 }
 
 private fun getFences(
@@ -54,31 +65,23 @@ private fun getFences(
         return fence to 1
     }
 
-    println("==checking $fenceType")
+    println("== looking at flower $fenceType in pos $currentPos")
 
     fence.add(currentPos)
     visited.add(currentPos)
 
     // check sides
-    if (!visited.contains(currentPos.up()) || map[currentPos.up().y][currentPos.up().x] != fenceType ) {
-        val (f, p) = getFences(map, fenceType, currentPos.up(), visited)
-        fence.addAll(f)
-        perimeter += p
-    }
-    if (!visited.contains(currentPos.down()) || map[currentPos.down().y][currentPos.down().x] != fenceType ) {
-        val (f, p) = getFences(map, fenceType, currentPos.down(), visited)
-        fence.addAll(f)
-        perimeter += p
-    }
-    if (!visited.contains(currentPos.left()) || map[currentPos.left().y][currentPos.left().x] != fenceType ) {
-        val (f, p) = getFences(map, fenceType, currentPos.left(), visited)
-        fence.addAll(f)
-        perimeter += p
-    }
-    if (!visited.contains(currentPos.right()) || map[currentPos.right().y][currentPos.right().x] != fenceType ) {
-        val (f, p) = getFences(map, fenceType, currentPos.right(), visited)
-        fence.addAll(f)
-        perimeter += p
+    listOf(
+        currentPos.up(),
+        currentPos.down(),
+        currentPos.left(),
+        currentPos.right()
+    ).onEach {
+        if (!visited.contains(it) || map[it.y][it.x] != fenceType) {
+            val (f, p) = getFences(map, fenceType, it, visited)
+            fence.addAll(f)
+            perimeter += p
+        }
     }
 
     return fence to perimeter
