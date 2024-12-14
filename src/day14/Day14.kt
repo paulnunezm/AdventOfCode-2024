@@ -73,7 +73,7 @@ fun main() {
         .readText()
 
     part1() // Solution: 231852216
-    part2()
+    part2() // Solution: 8159
 }
 
 fun part1() {
@@ -156,7 +156,6 @@ fun part2() {
 
     }
     println("seconds $seconds")
-//    robotList.print(xLastIndex, yLastIndex)
 }
 
 private fun findNeighbors(current: Position, visited: MutableSet<Position>, map: List<List<Char>>): Int {
